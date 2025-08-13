@@ -8,3 +8,14 @@ base_api/.env
 .env
 base_api/.env
 *.env
+
+# Python/cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Local envs
+.env
+base_api/.env
+*.env
