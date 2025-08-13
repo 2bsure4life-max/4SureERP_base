@@ -10,7 +10,8 @@ router = APIRouter()
 
 @router.post("/auth/login", response_model=TokenOut)
 def login(body: LoginIn, db: Session = Depends(get_db)):
-    ten = db.query(Tenant).filter(Tenant.slug==body.tenant).first()
+    tenant_field = getattr(Tenant, "slug", getattr(Tenant, "key"))
+    ten = db.query(Tenant).filter(tenant_field==body.tenant).first()
     if not ten:
         raise HTTPException(status_code=400, detail="Tenant not found")
     user = db.query(User).filter(User.tenant_id==ten.id, User.email==body.email).first()
