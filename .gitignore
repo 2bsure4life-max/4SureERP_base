@@ -3,3 +3,8 @@
 .env
 base_api/.env
 *.env
+
+# ignore env files
+.env
+base_api/.env
+*.env
