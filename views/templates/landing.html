@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to 4SureERP</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.5/lottie.min.js"></script>
+  <style>
+    body.login-page {
+      background-image: url("/static/img/background_texture.png");
+      background-size: cover; background-repeat: no-repeat; background-position: center;
+      height: 100vh; margin: 0; font-family: Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom: 10px; }
+    .brand img { height: 36px; }
+    .login-container { text-align: center; }
+    #lottie-tiger { width:300px; height:300px; margin-bottom:-20px; }
+    .login-box {
+      background-color: rgba(0,0,0,0.85); padding: 30px; border-radius: 10px; width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5); color: white;
+    }
+    .login-box h2 { margin: 10px 0 20px; }
+    .login-box input, .login-box button {
+      width: 100%; padding: 10px; border-radius:5px; border: none; margin-bottom:10px;
+    }
+    .login-box button { background:#2ecc71; color:#fff; font-weight:700; cursor:pointer; }
+    .login-box a { display:block; margin-top:10px; color:#ccc; font-size:12px; }
+    .error { color:#ffb3b3; font-size:12px; min-height:16px; margin:-6px 0 8px; }
+  </style>
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="brand">
+      <img src="/static/img/logo_main.png" alt="4SureERP Logo">
+      <div>4SureERP</div>
+    </div>
+
+    <div id="lottie-tiger" aria-hidden="true"></div>
+
+    <div class="login-box">
+      <h2>Welcome Back</h2>
+      <input type="text" id="username" placeholder="Admin" autocomplete="username" />
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+      <div id="err" class="error"></div>
+      <button id="signInBtn" type="button">Sign In</button>
+      <a href="#">Forgot Password?</a>
+    </div>
+  </div>
+
+  <script>
+    // Lottie
+    lottie.loadAnimation({
+      container: document.getElementById("lottie-tiger"),
+      renderer: "svg", loop: true, autoplay: true,
+      path: "/static/img/cute_tiger.json"
+    });
+
+    // TEMP: client-side login (no backend)
+    const VALID_USER = "Admin";
+    const VALID_PASS = "FloRight4u";
+
+    function login() {
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value;
+      const err = document.getElementById("err");
+      if (u === VALID_USER && p === VALID_PASS) {
+        window.location.href = "/dashboard";
+      } else {
+        err.textContent = "Login failed. Please try again.";
+      }
+    }
+    document.getElementById("signInBtn").addEventListener("click", login);
+    document.getElementById("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") login();
+    });
+  </script>
+</body>
+</html>

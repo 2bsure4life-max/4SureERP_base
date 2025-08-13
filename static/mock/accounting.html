@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mock Accounting Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { margin:0; font:14px/1.5 system-ui, sans-serif; background:#0b1118; color:#e8fff8; }
+    header { padding:10px 12px; border-bottom:1px solid rgba(160,255,240,0.15); }
+    .tag { font-size:12px; opacity:.8 }
+    .wrap { padding:14px; }
+    .card { border:1px solid rgba(160,255,240,0.15); border-radius:12px; padding:12px; margin:10px 0; background:linear-gradient(180deg,#0f1822,#0b1118); }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+    .kpi { border:1px dashed rgba(160,255,240,0.25); border-radius:10px; padding:10px; text-align:center; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>Accounting</strong> <span class="tag">mock</span></div>
+  </header>
+  <div class="wrap">
+    <div class="grid">
+      <div class="kpi">AR: $128,400</div>
+      <div class="kpi">Runway: 6.2 mo</div>
+      <div class="kpi">Invoices Due: 14</div>
+    </div>
+    <div class="card">
+      <div style="font-weight:600;margin-bottom:6px;">Recent Activity</div>
+      <ul>
+        <li>Invoice #1042 paid</li>
+        <li>Invoice #1049 overdue +7d</li>
+        <li>PO #2201 approved</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Listen for base:init with token/theme, then reply dashboard:ready
+    window.addEventListener("message", (ev) => {
+      const msg = ev.data || {};
+      if (msg.type === "base:init") {
+        // Optionally validate token (omitted for mock)
+        parent.postMessage({ type: "dashboard:ready", payload: { dashboardId: "accounting.main" } }, "*");
+        // Demo: request a resize after load
+        setTimeout(() => {
+          parent.postMessage({ type: "dashboard:resize", payload: { height: document.body.scrollHeight + 40 } }, "*");
+        }, 300);
+      }
+    });
+  </script>
+</body>
+</html>

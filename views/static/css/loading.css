@@ -1,0 +1,35 @@
+/* ================================
+   Crow Golfer Loading Animation
+================================ */
+
+#loading-screen {
+  position: fixed;
+  z-index: 9999;
+  background: #0b1b2b;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.6s ease;
+}
+
+.loading-golfer {
+  width: 120px;
+  height: auto;
+  animation: walk-across 2.5s ease-in-out infinite;
+}
+
+@keyframes walk-across {
+  0% {
+    transform: translateX(-100vw) scale(1);
+  }
+  50% {
+    transform: translateX(0vw) scale(1.1);
+  }
+  100% {
+    transform: translateX(100vw) scale(1);
+  }
+}

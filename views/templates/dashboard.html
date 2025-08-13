@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>4SureERP · Owner Dashboard (Universal Viewer)</title>
+<style>
+  :root{
+    --bg:#05090e; --ink:#e8fdff;
+    --glass:rgba(7,16,22,.24); --glass-strong:rgba(7,16,22,.32);
+    --line:rgba(111,255,255,.28); --line-soft:rgba(111,255,255,.16);
+    --glow:rgba(111,255,255,.25); --cyan:#66ffff;
+
+    /* Mini viewer target size ≈ 7in×5.5in @96dpi */
+    --miniW:672px; --miniH:528px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink); background:#000; overflow:hidden;
+    font:14px/1.4 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  }
+
+  /* ===== BACK LAYERS ===== */
+  /* Starfield is a fixed full-screen WebGL canvas injected into #space */
+  #space{position:fixed; inset:0; z-index:0; pointer-events:none;}
+  /* Globe sits centered above stars but below UI */
+  #globeWrap{
+    position:fixed; inset:0; z-index:1;
+    display:grid; place-items:center; pointer-events:none;
+  }
+  #globeViz{width:min(100vmin,1100px); height:min(100vmin,1100px);}
+
+  /* ===== TOPBAR ===== */
+  .topbar{
+    position:absolute; left:0; right:0; top:0; z-index:5;
+    display:flex; align-items:center; gap:14px; padding:10px 18px;
+    background:linear-gradient(to bottom, rgba(5,9,14,.85), rgba(5,9,14,.10));
+    border-bottom:1px solid var(--line-soft); backdrop-filter: blur(8px);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.4px}
+  .orb{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 40% 40%, var(--cyan), #0df);box-shadow:0 0 14px var(--glow)}
+  .topbar .hint{opacity:.85}
+
+  /* ===== MAIN LAYOUT ===== */
+  .stage{
+    position:absolute; inset:54px 0 0 0; display:grid;
+    grid-template-columns: 360px 1fr 360px; gap:16px; height:calc(100% - 54px);
+    padding:12px 16px; align-items:stretch; z-index:4;
+  }
+  .panel{
+    border-radius:18px; background:linear-gradient(180deg, var(--glass-strong), rgba(7,16,22,.14));
+    border:1px solid var(--line); box-shadow:0 8px 30px rgba(0,0,0,.55); position:relative; overflow:auto;
+  }
+  .panel header{
+    position:sticky; top:0; z-index:1;
+    padding:10px 12px; font-weight:600; letter-spacing:.3px;
+    background:linear-gradient(180deg, rgba(79,243,255,.12), rgba(79,243,255,0));
+    display:flex; align-items:center; justify-content:space-between; backdrop-filter: blur(6px);
+  }
+  .section{padding:12px; border-top:1px dashed var(--line-soft)}
+  .row{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+  .tile{
+    min-height:86px; border:1px solid var(--line); border-radius:14px; background:rgba(7,16,22,.26);
+    box-shadow:0 8px 24px rgba(0,0,0,.35); padding:10px; display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .list{display:grid; gap:10px}
+  .item{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px dashed var(--line-soft);border-radius:12px;background:rgba(7,16,22,.22)}
+  .chip{font-size:11px;padding:3px 8px;border:1px solid var(--line);border-radius:999px}
+
+  /* ===== UNIVERSAL MINI VIEWER ===== */
+  #miniViewer{
+    position:fixed; z-index:6; width:var(--miniW); height:var(--miniH);
+    left:50%; top:50%; transform:translate(-50%,-50%);
+    border-radius:16px; border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(7,16,22,.88), rgba(7,16,22,.75));
+    box-shadow:0 10px 60px rgba(0,0,0,.65), 0 0 28px rgba(111,255,255,.18);
+    display:none; overflow:hidden; backdrop-filter: blur(4px);
+  }
+  #miniHeader{
+    height:42px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:6px 10px; background:linear-gradient(180deg, rgba(79,243,255,.10), rgba(79,243,255,0));
+    border-bottom:1px solid var(--line-soft);
+  }
+  #miniHeader .title{font-weight:600; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  #miniHeader .actions{display:flex; gap:8px}
+  .btn{
+    background:rgba(0,0,0,.35); border:1px solid var(--line); color:#dffcff;
+    padding:6px 10px; border-radius:999px; cursor:pointer; user-select:none;
+  }
+  .btn:hover{background:rgba(0,0,0,.5)}
+  #miniFrame{width:100%; height:calc(100% - 42px); border:0; background:#000}
+
+  /* ===== MODULE GRID (right panel) ===== */
+  .modules{display:grid; gap:10px}
+  .module-card{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px; border:1px dashed var(--line-soft); border-radius:12px; background:rgba(7,16,22,.22); cursor:pointer;
+  }
+  .module-card:hover{background:rgba(7,16,22,.32)}
+  .module-card .label{font-weight:600}
+  .module-card .open{font-size:12px; opacity:.85}
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width:1200px){
+    .stage{grid-template-columns:1fr; overflow:auto}
+    #miniViewer{width:min(var(--miniW), 92vw); height:calc(min(var(--miniW), 92vw) * 0.785);} /* keep aspect when narrow */
+  }
+</style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div id="space"></div>
+  <div id="globeWrap"><div id="globeViz" aria-label="Holographic Earth"></div></div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand"><span class="orb"></span> 4SureERP</div>
+    <div class="hint">Owner · Executive Dashboard</div>
+    <div style="margin-left:auto"></div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="stage">
+    <!-- LEFT PANEL -->
+    <aside class="panel">
+      <header>Operations & KPIs <span class="chip">Overview</span></header>
+      <div class="section">
+        <div class="row">
+          <div class="tile"><strong>Billable Hours</strong><div class="chip">This week</div></div>
+          <div class="tile"><strong>Calls Logged</strong><div class="chip">24h</div></div>
+          <div class="tile"><strong>Next Appt</strong><div class="chip">Today 3:00 PM</div></div>
+          <div class="tile"><strong>AR Open</strong><div class="chip">$124k</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <strong>Employees</strong>
+        <div class="list" style="margin-top:8px">
+          <div class="item"><span>On Shift: 36</span><span class="chip">Top performers ↑</span></div>
+          <div class="item"><span>Alerts</span><span class="chip" style="border-color:rgba(255,95,109,.45);color:#ffccd2">1 payroll issue</span></div>
+          <div class="item"><span>Emergency Tab</span><span class="chip">Open</span></div>
+        </div>
+      </div>
+      <div class="section">
+        <strong>Legal & Voting</strong>
+        <div class="list" style="margin-top:8px">
+          <div class="item"><span>Terms v3 live</span><span class="chip">Push Update</span></div>
+          <div class="item"><span>Voting</span><span class="chip">PUBLIC · 64% in</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER (globe shows through; mini viewer appears centered) -->
+    <main></main>
+
+    <!-- RIGHT PANEL: installed modules -->
+    <aside class="panel">
+      <header>Modules · Live <span class="chip">Installed</span></header>
+      <div class="section">
+        <strong>Dashboards</strong>
+        <div id="modules" class="modules" style="margin-top:8px"></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- MINI VIEWER -->
+  <div id="miniViewer" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="miniHeader">
+      <div class="title" id="miniTitle">Viewer</div>
+      <div class="actions">
+        <a id="openFull" class="btn" href="#" target="_blank" rel="noopener">Open Full</a>
+        <button id="closeMini" class="btn" type="button">Close</button>
+      </div>
+    </div>
+    <iframe id="miniFrame" title="Universal Mini Viewer"></iframe>
+  </div>
+
+  <!-- libs -->
+  <script src="https://unpkg.com/three@0.152.2/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl"></script>
+
+  <!-- ===== STARFIELD + GLOBE + MODULE WIRING ===== -->
+  <script>
+  /***** Full-screen starfield (separate Three scene) *****/
+  (function initStars(){
+    const space = document.getElementById('space');
+
+    // Renderer
+    const starRenderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+    starRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    starRenderer.setSize(window.innerWidth, window.innerHeight);
+    const canvas = starRenderer.domElement;
+    canvas.style.position = 'fixed';
+    canvas.style.inset = '0';
+    canvas.style.zIndex = '0';
+    canvas.style.pointerEvents = 'none';
+    space.appendChild(canvas);
+
+    // Scene + camera
+    const starScene = new THREE.Scene();
+    const starCamera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 1, 6000);
+    starCamera.position.z = 1400;
+
+    // Soft circular sprite for round stars
+    function makeCircleTexture(){
+      const size = 64;
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      const r = size/2;
+      const grd = g.createRadialGradient(r,r,0, r,r,r);
+      grd.addColorStop(0, 'rgba(255,255,255,1)');
+      grd.addColorStop(0.4, 'rgba(255,255,255,0.7)');
+      grd.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grd;
+      g.beginPath(); g.arc(r,r,r,0,Math.PI*2); g.fill();
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = 4;
+      return tex;
+    }
+    const starTex = makeCircleTexture();
+
+    function addStarLayer({count, spread, size, opacity, drift}){
+      const geom = new THREE.BufferGeometry();
+      const pos = new Float32Array(count*3);
+      for (let i=0;i<count;i++){
+        pos[i*3+0] = (Math.random()-0.5)*2*spread;
+        pos[i*3+1] = (Math.random()-0.5)*2*spread;
+        pos[i*3+2] = (Math.random()-0.5)*2*spread;
+      }
+      geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({
+        map: starTex, color: 0xffffff, size, sizeAttenuation:true,
+        transparent:true, opacity, depthWrite:false, blending:THREE.AdditiveBlending
+      });
+      const stars = new THREE.Points(geom, mat);
+      stars.userData = { drift, mat };
+      return stars;
+    }
+
+    const starsNear = addStarLayer({ count: 9000, spread: 1600, size: 8,  opacity: 0.95, drift: 0.00022 });
+    const starsFar  = addStarLayer({ count: 14000,spread: 2400, size: 6,  opacity: 0.85, drift: 0.00008 });
+    const group = new THREE.Group();
+    group.add(starsNear); group.add(starsFar);
+    starScene.add(group);
+
+    let t=0;
+    function animate(){
+      requestAnimationFrame(animate);
+      t += 0.01;
+      starsNear.userData.mat.opacity = 0.88 + Math.sin(t) * 0.07;
+      starsFar.userData.mat.opacity  = 0.80 + Math.cos(t*0.7) * 0.06;
+      starsNear.rotation.y += starsNear.userData.drift;
+      starsFar.rotation.y  += starsFar.userData.drift;
+      starRenderer.render(starScene, starCamera);
+
+      // Keep globe auto-rotate ticking (its own renderer handles drawing)
+      if (window.__globeUpdate) window.__globeUpdate();
+    }
+    animate();
+
+    // Resize handling
+    function onResize(){
+      const w = window.innerWidth, h = window.innerHeight;
+      starRenderer.setSize(w, h);
+      starCamera.aspect = w / h;
+      starCamera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', onResize, { passive:true });
+  })();
+
+  /***** Globe (centered, auto-rotate, no grab/zoom) *****/
+  (function initGlobe(){
+    const globeEl = document.getElementById('globeViz');
+
+    const world = Globe()
+      (globeEl)
+      .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+      .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+      .backgroundColor('rgba(0,0,0,0)')
+      .showGraticules(true)
+      .showAtmosphere(true)
+      .atmosphereColor('#66ffff')
+      .atmosphereAltitude(0.14);
+
+    // Lights
+    world.scene().add(new THREE.AmbientLight(0x88ffff, 0.42));
+    const dir = new THREE.DirectionalLight(0x77ffff, 0.6);
+    dir.position.set(-200, 200, 120);
+    world.scene().add(dir);
+
+    // Controls: no user interaction; do auto-rotate
+    world.controls().enableRotate = false;
+    world.controls().enableZoom = false;
+    world.controls().enablePan = false;
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.5;
+
+    // Keep globe sized & centered
+    function sizeGlobe(){
+      const s = Math.min(window.innerWidth, window.innerHeight, 1100);
+      globeEl.style.width = s+'px';
+      globeEl.style.height = s+'px';
+      world.width(s).height(s);
+    }
+    window.addEventListener('resize', sizeGlobe, { passive:true });
+    sizeGlobe();
+
+    // Expose a tick so the starfield loop can advance the auto-rotate
+    window.__globeUpdate = () => world.controls().update();
+  })();
+
+  /***** Mini viewer + modules *****/
+  (function initModules(){
+    const mini = document.getElementById('miniViewer');
+    const miniFrame = document.getElementById('miniFrame');
+    const miniTitle = document.getElementById('miniTitle');
+    const closeMini = document.getElementById('closeMini');
+    const openFull = document.getElementById('openFull');
+    const modulesEl = document.getElementById('modules');
+
+    function openViewer(label, url){
+      miniTitle.textContent = label;
+      openFull.href = url;
+      miniFrame.src = url;
+      mini.style.display = 'block';
+      mini.setAttribute('aria-hidden','false');
+      mini.style.pointerEvents = 'auto';
+    }
+    function hideViewer(){
+      mini.style.display = 'none';
+      mini.setAttribute('aria-hidden','true');
+      miniFrame.src = 'about:blank';
+    }
+    closeMini.addEventListener('click', hideViewer);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') hideViewer(); });
+
+    function renderModules(items){
+      modulesEl.textContent = '';
+      items.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'module-card';
+        const url = (m.embed && m.embed.url) ? m.embed.url : '#';
+        card.innerHTML = `<div class="label">${m.label}</div><div class="open chip">Open</div>`;
+        card.addEventListener('click', () => openViewer(m.label, url));
+        modulesEl.appendChild(card);
+      });
+      if (!items.length) modulesEl.textContent = 'No modules found.';
+    }
+
+    const fallback = [
+      { dashboardId:'sales.main',      label:'Sales',       embed:{ url:'/dashboard/sales.html', height:560 } },
+      { dashboardId:'accounting.main', label:'Accounting',  embed:{ url:'/dashboard/accounting.html', height:560 } },
+      { dashboardId:'employees.main',  label:'Employees',   embed:{ url:'/dashboard/employees.html', height:560 } }
+    ];
+
+    (async function loadModules(){
+      modulesEl.textContent = 'Loading…';
+      try {
+        // Use relative /api path if you’ve proxied it; otherwise this will 404 and we’ll fall back.
+        const res = await fetch('/api/registry/dashboards', { credentials:'include' });
+        if (!res.ok) throw new Error('Registry not reachable');
+        const items = await res.json();
+        renderModules(items);
+      } catch (err) {
+        console.warn('Using fallback modules:', err.message || err);
+        renderModules(fallback);
+      }
+    })();
+
+    // Optional: close mini if user clicks outside it (but not when clicking a card)
+    document.addEventListener('click', (e)=>{
+      if (!mini.contains(e.target) && mini.style.display==='block' && !e.target.closest('.module-card')){
+        hideViewer();
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Sales Dashboard (mock)</title>
+<style>
+  body{margin:0;font:14px/1.4 system-ui;background:#0b1018;color:#e8fff8;display:grid;place-items:center;height:100vh}
+  .card{border:1px solid rgba(160,255,240,.2);border-radius:14px;padding:18px 22px;background:#0e1520;box-shadow:0 0 28px rgba(160,255,240,.15)}
+  h1{margin:0 0 6px;font-size:18px;color:#8dd3c7;letter-spacing:.06em}
+  p{margin:0;opacity:.9}
+</style>
+<div class="card">
+  <h1>Sales — Mock</h1>
+  <p>Status: ready ✅</p>
+</div>
+<script>
+  // tell the host we're ready (matches the mock handshake)
+  parent?.postMessage({ type: "dashboard:ready" }, "*");
+  window.addEventListener("message", (ev)=>{
+    if(ev.data?.type==="base:init"){ console.log("base:init", ev.data); }
+  });
+</script>

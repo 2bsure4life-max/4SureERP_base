@@ -1,0 +1,25 @@
+{
+  "roles": {
+    "Owner": {
+      "description": "Full access to all system features",
+      "permissions": ["*"]
+    },
+    "Admin": {
+      "description": "Manage users, modules, and settings",
+      "permissions": [
+        "view_dashboard",
+        "manage_users",
+        "manage_modules",
+        "view_reports"
+      ]
+    },
+    "Employee": {
+      "description": "Access limited to assigned work areas",
+      "permissions": [
+        "view_dashboard",
+        "view_projects",
+        "log_timesheet"
+      ]
+    }
+  }
+}

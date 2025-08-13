@@ -1,0 +1,32 @@
+[
+  {
+    "dashboardId": "sales.main",
+    "label": "Sales",
+    "embed": {
+      "url": "https://www.4sureerp.com/dashboard/sales.html",
+      "height": 560,
+      "capabilities": ["filters"]
+    },
+    "scopesRequired": ["module:sales.view"]
+  },
+  {
+    "dashboardId": "accounting.main",
+    "label": "Accounting",
+    "embed": {
+      "url": "https://www.4sureerp.com/dashboard/accounting.html",
+      "height": 560,
+      "capabilities": ["filters","drilldown","export"]
+    },
+    "scopesRequired": ["module:accounting.view"]
+  },
+  {
+    "dashboardId": "employees.main",
+    "label": "Employees",
+    "embed": {
+      "url": "https://www.4sureerp.com/dashboard/employees.html",
+      "height": 560,
+      "capabilities": ["search"]
+    },
+    "scopesRequired": ["module:employees.view"]
+  }
+]

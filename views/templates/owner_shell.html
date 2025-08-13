@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>4SureERP — Owner Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0a0f14; --panel:#0e1520; --line: rgba(160,255,240,0.12);
+      --text:#e8fff8; --muted:#8dd3c7; --glow: rgba(160,255,240,0.25);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;background:#05080c;color:var(--text);font:15px/1.5 system-ui,Segoe UI,Inter,Roboto,sans-serif}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+    .brand{display:flex;gap:10px;align-items:center}
+    .dot{width:10px;height:10px;border-radius:999px;background:#a0ffe0;box-shadow:0 0 16px var(--glow)}
+    .actions{display:flex;gap:8px}
+    .btn{border:1px solid var(--line);background:linear-gradient(180deg,rgba(160,255,240,.05),rgba(160,255,240,.02));color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
+    main{display:grid;grid-template-columns:260px 1fr 300px;gap:14px;padding:14px}
+    .panel{border:1px solid var(--line);background:linear-gradient(180deg,rgba(14,21,32,.9),rgba(8,12,18,.9));border-radius:16px;padding:12px;box-shadow:0 0 30px var(--glow)}
+    .panel h2{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+    #viewport{min-height:560px;display:grid;place-items:center;overflow:hidden}
+    select,.info{width:100%;background:#0b1018;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px}
+    .info{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;opacity:.9;min-height:36px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="dot"></div><strong>4SUREERP • OWNER DASHBOARD</strong></div>
+    <div class="actions">
+      <button class="btn" onclick="alert('Add Card — TBD')">Add Card</button>
+      <button class="btn" onclick="alert('Customize — TBD')">Customize</button>
+      <button class="btn" onclick="alert('Matrix — TBD')">Open Matrix</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Quick KPIs</h2>
+      <div class="info">AR, Runway, Appointments, Employees…</div>
+    </section>
+
+    <section class="panel">
+      <h2>Viewport</h2>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <label for="dashboard-picker" style="font-size:12px;opacity:.8">Choose dashboard:</label>
+        <select id="dashboard-picker"></select>
+      </div>
+      <div id="viewport">Loading…</div>
+      <div id="debug" class="info" style="margin-top:10px"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>Modules</h2>
+      <div class="info">Market Watch, Growth Suite, Music/Emergency/Tracking, Legal/Voting/Matrix…</div>
+    </aside>
+  </main>
+
+  <!-- Your viewport glue -->
+  <script type="module" src="/static/js/viewport.js" data-auto="1"></script>
+</body>
+</html>

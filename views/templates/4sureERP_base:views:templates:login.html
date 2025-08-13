@@ -1,0 +1,17 @@
+<t t-name="4sureERP_base.login_template">
+    <t t-call="website.layout">
+        <div class="login-container">
+            <div class="login-box">
+                <h2>Welcome to 4SureERP</h2>
+                <t t-if="error">
+                    <div class="alert alert-danger"><t t-esc="error"/></div>
+                </t>
+                <form action="/login" method="post">
+                    <input type="text" name="username" placeholder="Username" required/>
+                    <input type="password" name="password" placeholder="Password" required/>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+    </t>
+</t>

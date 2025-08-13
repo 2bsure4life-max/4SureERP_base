@@ -1,0 +1,32 @@
+[
+  {
+    "dashboardId": "accounting.main",
+    "label": "Accounting",
+    "embed": {
+      "url": "/modules/accounting/accounting.html",
+      "height": 560,
+      "capabilities": ["filters","drilldown","export"]
+    },
+    "scopesRequired": ["module:accounting.view"]
+  },
+  {
+    "dashboardId": "employees.main",
+    "label": "Employees",
+    "embed": {
+      "url": "/modules/employees/employees.html",
+      "height": 560,
+      "capabilities": ["search"]
+    },
+    "scopesRequired": ["module:employees.view"]
+  },
+  {
+    "dashboardId": "sales.main",
+    "label": "Sales",
+    "embed": {
+      "url": "/modules/sales/sales.html",
+      "height": 560,
+      "capabilities": ["filters"]
+    },
+    "scopesRequired": ["module:sales.view"]
+  }
+]

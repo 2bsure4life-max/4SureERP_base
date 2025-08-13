@@ -1,0 +1,27 @@
+# Include important documentation
+include README.md
+include CONTRIBUTING.md
+include SECURITY.md
+include LICENSE
+
+# Include configuration files
+include setup.cfg
+include requirements.txt
+
+# Include all static assets
+recursive-include 4sureerp_base/static *
+
+# Include all XML view definitions
+recursive-include 4sureerp_base/views *.xml
+
+# Include all security rules
+recursive-include 4sureerp_base/security *.csv
+recursive-include 4sureerp_base/security *.xml
+
+# Include all Python code
+recursive-include foursureerp *.py
+recursive-include 4sureerp_base *.py
+
+# Exclude compiled files
+global-exclude *.pyc
+global-exclude __pycache__/
